@@ -150,6 +150,134 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
+        /* NOUVEAU: Bouton flèche de recherche */
+        .search-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+
+        .search-toggle-btn:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .search-toggle-btn i {
+            font-size: 22px;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .search-toggle-btn.active i {
+            transform: rotate(180deg);
+        }
+
+        body.dark-mode .search-toggle-btn {
+            background: rgba(45, 45, 45, 0.95);
+            border-color: #667eea;
+        }
+
+        /* NOUVEAU: Panneau de recherche */
+        .search-panel {
+            position: fixed;
+            bottom: -250px;
+            left: 0;
+            right: 0;
+            height: 250px;
+            background: var(--bg-secondary);
+            border-top: 3px solid #667eea;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            z-index: 998;
+            transition: bottom 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .search-panel.show {
+            bottom: 0;
+        }
+
+        .search-panel h3 {
+            color: var(--text-primary);
+            font-size: 18px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-panel h3 i {
+            color: #667eea;
+        }
+
+        .search-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .search-results-info {
+            color: var(--text-secondary);
+            font-size: 14px;
+            padding: 10px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            text-align: center;
+        }
+
         .page-title {
             position: fixed;
             top: var(--navbar-height);
@@ -452,21 +580,49 @@
             font-weight: 600;
         }
 
-        .comments-toggle {
-            padding: 12px 15px;
+        /* NOUVEAU: Section commentaires/réactions divisée */
+        .comments-reactions-section {
+            display: flex;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-toggle-large {
+            flex: 1;
+            padding: 15px;
             cursor: pointer;
             color: #667eea;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 8px;
             transition: all 0.3s;
-            font-size: 13px;
+            font-size: 14px;
+            border-right: 1px solid var(--border-color);
         }
 
-        .comments-toggle:hover {
+        .comments-toggle-large:hover {
             background: rgba(102, 126, 234, 0.05);
-            padding-left: 20px;
+        }
+
+        .user-reactions-btn {
+            width: 60px;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            background: rgba(102, 126, 234, 0.03);
+        }
+
+        .user-reactions-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .user-reactions-btn i {
+            font-size: 20px;
+            color: #667eea;
         }
 
         .comments-section {
@@ -582,6 +738,36 @@
                 top: calc(var(--navbar-height) - 2px);
             }
 
+            .search-toggle-btn {
+                width: 45px;
+                height: 45px;
+                bottom: 15px;
+            }
+
+            .search-toggle-btn i {
+                font-size: 20px;
+            }
+
+            .search-panel {
+                height: 220px;
+                bottom: -220px;
+                padding: 20px 15px;
+            }
+
+            .search-panel h3 {
+                font-size: 16px;
+            }
+
+            .search-input {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .search-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
             .badge {
                 font-size: 8px;
                 padding: 1px 4px;
@@ -616,6 +802,15 @@
             .article-text {
                 font-size: 13px;
             }
+
+            .comments-toggle-large {
+                font-size: 13px;
+                padding: 12px;
+            }
+
+            .user-reactions-btn {
+                width: 55px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -638,6 +833,15 @@
 
             .nav-item span {
                 font-size: 9px;
+            }
+
+            .search-input-container {
+                flex-direction: column;
+            }
+
+            .search-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -691,6 +895,29 @@
         </div>
     </nav>
 
+    <!-- NOUVEAU: Bouton flèche de recherche -->
+    <button class="search-toggle-btn" id="search-toggle-btn">
+        <i class="fas fa-chevron-down"></i>
+    </button>
+
+    <!-- NOUVEAU: Panneau de recherche -->
+    <div class="search-panel" id="search-panel">
+        <h3>
+            <i class="fas fa-search"></i>
+            Rechercher des articles
+        </h3>
+        <div class="search-input-container">
+            <input type="text" class="search-input" id="search-input" placeholder="Entrez des mots-clés...">
+            <button class="search-btn" id="search-btn">
+                <i class="fas fa-search"></i>
+                Rechercher
+            </button>
+        </div>
+        <div class="search-results-info" id="search-results-info" style="display: none;">
+            Résultats de recherche: <span id="search-results-count">0</span> article(s) trouvé(s)
+        </div>
+    </div>
+
     <div class="page-title" id="page-title">Accueil</div>
 
     <div class="spa-container">
@@ -727,16 +954,18 @@
     </div>
 
     <script src="supabaseClient.js"></script>
-    <script src="commentaires.js"></script>
-    <script>
+    <script src="commentaires.js"></script><script>
         const { supabase, getCurrentUser, getUserProfile } = window.supabaseClient;
         let currentUser = null;
         let userProfile = null;
+        let allArticles = [];
+        let isSearching = false;
 
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         const body = document.body;
 
+        // Gestion du thème
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
             body.classList.add('dark-mode');
@@ -752,6 +981,72 @@
             } else {
                 themeIcon.classList.replace('fa-sun', 'fa-moon');
                 localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // NOUVEAU: Gestion du panneau de recherche
+        const searchToggleBtn = document.getElementById('search-toggle-btn');
+        const searchPanel = document.getElementById('search-panel');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const searchResultsInfo = document.getElementById('search-results-info');
+        const searchResultsCount = document.getElementById('search-results-count');
+
+        searchToggleBtn.addEventListener('click', () => {
+            searchPanel.classList.toggle('show');
+            searchToggleBtn.classList.toggle('active');
+            
+            if (searchPanel.classList.contains('show')) {
+                searchInput.focus();
+            }
+        });
+
+        // Recherche d'articles
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        async function performSearch() {
+            const query = searchInput.value.trim().toLowerCase();
+            
+            if (!query) {
+                displayArticles(allArticles);
+                searchResultsInfo.style.display = 'none';
+                isSearching = false;
+                return;
+            }
+
+            isSearching = true;
+            
+            // Filtrer les articles par mots-clés
+            const filteredArticles = allArticles.filter(article => {
+                const text = article.texte.toLowerCase();
+                const authorName = `${article.users_profile.prenom} ${article.users_profile.nom}`.toLowerCase();
+                
+                return text.includes(query) || authorName.includes(query);
+            });
+
+            searchResultsCount.textContent = filteredArticles.length;
+            searchResultsInfo.style.display = 'block';
+            
+            displayArticles(filteredArticles);
+            
+            // Fermer le panneau après la recherche
+            setTimeout(() => {
+                searchPanel.classList.remove('show');
+                searchToggleBtn.classList.remove('active');
+            }, 500);
+        }
+
+        // Réinitialiser la recherche quand on efface l'input
+        searchInput.addEventListener('input', (e) => {
+            if (e.target.value.trim() === '' && isSearching) {
+                displayArticles(allArticles);
+                searchResultsInfo.style.display = 'none';
+                isSearching = false;
             }
         });
 
@@ -903,17 +1198,33 @@
                     return;
                 }
 
-                const container = document.getElementById('articles-container');
-                container.innerHTML = '';
-
-                articles.forEach(article => {
-                    container.appendChild(createArticleCard(article));
-                });
+                allArticles = articles;
+                displayArticles(articles);
 
             } catch (error) {
                 console.error('Erreur:', error);
                 document.getElementById('loader').innerHTML = '<p style="color: red;">Erreur de chargement</p>';
             }
+        }
+
+        function displayArticles(articles) {
+            const container = document.getElementById('articles-container');
+            container.innerHTML = '';
+
+            if (articles.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>Aucun article trouvé</h3>
+                        <p>Essayez avec d'autres mots-clés</p>
+                    </div>
+                `;
+                return;
+            }
+
+            articles.forEach(article => {
+                container.appendChild(createArticleCard(article));
+            });
         }
 
         function createArticleCard(article) {
@@ -980,9 +1291,14 @@
                         <span>${article.reaction_colere || 0}</span>
                     </button>
                 </div>
-                <div class="comments-toggle" onclick="toggleComments('${article.article_id}')">
-                    <i class="fas fa-comment"></i>
-                    <span>Voir les commentaires</span>
+                <div class="comments-reactions-section">
+                    <div class="comments-toggle-large" onclick="toggleComments('${article.article_id}')">
+                        <i class="fas fa-comment"></i>
+                        <span>Commentaires</span>
+                    </div>
+                    <div class="user-reactions-btn" onclick="viewUserReactions('${article.article_id}')">
+                        <i class="fas fa-user"></i>
+                    </div>
                 </div>
                 <div class="comments-section" id="comments-${article.article_id}"></div>
             `;
@@ -1062,6 +1378,22 @@
             }
         }
 
+        // NOUVEAU: Fonction pour voir les utilisateurs qui ont réagi
+        async function viewUserReactions(articleId) {
+            if (!currentUser || !userProfile) {
+                alert('Connectez-vous pour voir les réactions');
+                window.location.href = 'connexion.html';
+                return;
+            }
+
+            // Redirection vers la page usereact.js avec l'ID de l'article
+            // Cette page sera créée plus tard
+            window.location.href = `usereact.html?article_id=${articleId}`;
+        }
+
+        // Exposer la fonction globalement pour les onclick
+        window.viewUserReactions = viewUserReactions;
+
         async function loadNotificationCount() {
             try {
                 const { count, error } = await supabase
@@ -1106,6 +1438,7 @@
             }
         }
 
+        // Rafraîchir les compteurs toutes les 30 secondes
         setInterval(() => {
             if (currentUser) {
                 loadNotificationCount();
