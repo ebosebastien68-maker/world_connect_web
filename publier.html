@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publier - Administration</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .navbar h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .navbar-right {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .icon-btn:hover {
+            color: #667eea;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 900px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        textarea, input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-upload {
+            border: 2px dashed #d0d0d0;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .preview-img {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .preview-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-img {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loader.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .url-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <h1><i class="fas fa-edit"></i> Administration</h1>
+        <div class="navbar-right">
+            <button class="icon-btn" onclick="window.location.href='index.html'" title="Accueil">
+                <i class="fas fa-home"></i>
+            </button>
+            <button class="icon-btn" onclick="window.location.href='messages.html'" title="Messages">
+                <i class="fas fa-envelope"></i>
+            </button>
+            <button class="logout-btn" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div id="message" class="message"></div>
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">Chargement...</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="article">
+                <i class="fas fa-newspaper"></i> Publier un article
+            </button>
+            <button class="tab-btn" data-tab="notification">
+                <i class="fas fa-bell"></i> Envoyer une notification
+            </button>
+        </div>
+
+        <!-- Article Form -->
+        <div id="article-tab" class="tab-content active">
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: #333;">
+                    <i class="fas fa-pencil-alt"></i> Nouvel Article
+                </h2>
+                <form id="article-form">
+                    <div class="form-group">
+                        <label for="texte">Contenu de l'article *</label>
+                        <textarea id="texte" required placeholder="Écrivez votre article ici..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-images"></i> Images (optionnel - max 5)</label>
+                        <div class="file-upload" onclick="document.getElementById('images').click()">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: #667eea;"></i>
+                            <p style="margin-top: 10px;">Cliquez pour ajouter des images</p>
+                            <input type="file" id="images" accept="image/*" multiple>
+                        </div>
+                        <div id="preview-container" class="preview-container"></div>
+                    </div>
+
+                    <div class="url-group">
+                        <div class="form-group">
+                            <label for="texte_url">Lien texte</label>
+                            <input type="url" id="texte_url" placeholder="https://example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="vente_url">Lien vente</label>
+                            <input type="url" id="vente_url" placeholder="https://example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="whatsapp_url">Lien WhatsApp</label>
+                            <input type="url" id="whatsapp_url" placeholder="https://wa.me/...">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> Publier l'article
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notification Form -->
+        <div id="notification-tab" class="tab-content">
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: #333;">
+                    <i class="fas fa-bullhorn"></i> Nouvelle Notification
+                </h2>
+                <form id="notification-form">
+                    <div class="form-group">
+                        <label for="notif-user">Destinataire</label>
+                        <select id="notif-user" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px;">
+                            <option value="all">Tous les utilisateurs</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notif-texte">Message de la notification *</label>
+                        <textarea id="notif-texte" required placeholder="Écrivez votre notification..." rows="5"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-bell"></i> Envoyer la notification
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabaseClient.js"></script>
+    <script>
+        const { supabase, getCurrentUser, getUserProfile } = window.supabaseClient;
+        let selectedFiles = [];
+
+        // Vérifier les permissions admin
+        window.addEventListener('DOMContentLoaded', async () => {
+            const user = await getCurrentUser();
+            if (!user) {
+                window.location.href = 'connexion.html';
+                return;
+            }
+
+            const profile = await getUserProfile(user.id);
+            if (!profile || profile.role !== 'admin') {
+                alert('Accès refusé. Réservé aux administrateurs.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadUsers();
+        });
+
+        // Gestion des onglets
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tab = this.getAttribute('data-tab');
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(`${tab}-tab`).classList.add('active');
+            });
+        });
+
+        // Gestion des images
+        document.getElementById('images').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (selectedFiles.length + files.length > 5) {
+                showMessage('Maximum 5 images autorisées', 'error');
+                return;
+            }
+            selectedFiles.push(...files);
+            displayPreviews();
+        });
+
+        function displayPreviews() {
+            const container = document.getElementById('preview-container');
+            container.innerHTML = '';
+            selectedFiles.forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-img';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button class="remove-img" onclick="removeImage(${idx})">×</button>
+                    `;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeImage(idx) {
+            selectedFiles.splice(idx, 1);
+            displayPreviews();
+        }
+
+        // Charger les utilisateurs
+        async function loadUsers() {
+            const { data } = await supabase.from('users_profile').select('user_id, username, prenom, nom');
+            const select = document.getElementById('notif-user');
+            data.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.user_id;
+                opt.textContent = `${u.prenom} ${u.nom} (@${u.username})`;
+                select.appendChild(opt);
+            });
+        }
+
+        // Publier un article
+        document.getElementById('article-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            toggleLoader(true);
+
+            try {
+                const user = await getCurrentUser();
+                const texte = document.getElementById('texte').value;
+                const texte_url = document.getElementById('texte_url').value || null;
+                const vente_url = document.getElementById('vente_url').value || null;
+                const whatsapp_url = document.getElementById('whatsapp_url').value || null;
+
+                // Créer l'article
+                const { data: article, error: articleError } = await supabase
+                    .from('articles')
+                    .insert({
+                        user_id: user.id,
+                        texte,
+                        texte_url,
+                        vente_url,
+                        whatsapp_url
+                    })
+                    .select()
+                    .single();
+
+                if (articleError) throw articleError;
+
+                // Uploader les images
+                if (selectedFiles.length > 0) {
+                    for (const file of selectedFiles) {
+                        const fileName = `${Date.now()}_${file.name}`;
+                        const { error: uploadError } = await supabase.storage
+                            .from('articles-images')
+                            .upload(fileName, file);
+
+                        if (uploadError) throw uploadError;
+
+                        const { data: { publicUrl } } = supabase.storage
+                            .from('articles-images')
+                            .getPublicUrl(fileName);
+
+                        await supabase.from('article_images').insert({
+                            article_id: article.article_id,
+                            image_url: publicUrl
+                        });
+                    }
+                }
+
+                showMessage('Article publié avec succès !', 'success');
+                document.getElementById('article-form').reset();
+                selectedFiles = [];
+                displayPreviews();
+
+            } catch (error) {
+                showMessage(error.message, 'error');
+            } finally {
+                toggleLoader(false);
+            }
+        });
+
+        // Envoyer une notification
+        document.getElementById('notification-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            toggleLoader(true);
+
+            try {
+                const userId = document.getElementById('notif-user').value;
+                const texte = document.getElementById('notif-texte').value;
+
+                if (userId === 'all') {
+                    const { data: users } = await supabase.from('users_profile').select('user_id');
+                    for (const u of users) {
+                        await supabase.from('notifications').insert({
+                            user_id: u.user_id,
+                            texte
+                        });
+                    }
+                } else {
+                    await supabase.from('notifications').insert({
+                        user_id: userId,
+                        texte
+                    });
+                }
+
+                showMessage('Notification envoyée avec succès !', 'success');
+                document.getElementById('notification-form').reset();
+
+            } catch (error) {
+                showMessage(error.message, 'error');
+            } finally {
+                toggleLoader(false);
+            }
+        });
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type} show`;
+            setTimeout(() => msg.classList.remove('show'), 5000);
+        }
+
+        function toggleLoader(show) {
+            document.getElementById('loader').classList.toggle('show', show);
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            window.location.href = 'connexion.html';
+        }
+    </script>
+</body>
+                                 </html>

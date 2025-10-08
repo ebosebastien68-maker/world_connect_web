@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion / Inscription</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .form-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .message.success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .message.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .loader.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .name-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .name-group .input-group {
+            flex: 1;
+        }
+
+        .info-text {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="connexion">Connexion</div>
+            <div class="tab" data-tab="inscription">Inscription</div>
+            <div class="tab" data-tab="reset">Mot de passe</div>
+        </div>
+
+        <div class="form-container">
+            <!-- Message de notification -->
+            <div id="message" class="message"></div>
+            
+            <!-- Loader -->
+            <div id="loader" class="loader">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #666;">Chargement...</p>
+            </div>
+
+            <!-- Formulaire de Connexion -->
+            <div id="connexion-form" class="form-content active">
+                <h2>Bon retour !</h2>
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" required placeholder="exemple@email.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="login-password">Mot de passe</label>
+                        <input type="password" id="login-password" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn">Se connecter</button>
+                </form>
+                <div class="back-link">
+                    <a href="#" onclick="switchTab('reset'); return false;">Mot de passe oublié ?</a>
+                </div>
+            </div>
+
+            <!-- Formulaire d'Inscription -->
+            <div id="inscription-form" class="form-content">
+                <h2>Créer un compte</h2>
+                <form id="signup-form">
+                    <div class="name-group">
+                        <div class="input-group">
+                            <label for="signup-prenom">Prénom</label>
+                            <input type="text" id="signup-prenom" required placeholder="John">
+                        </div>
+                        <div class="input-group">
+                            <label for="signup-nom">Nom</label>
+                            <input type="text" id="signup-nom" required placeholder="Doe">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" required placeholder="exemple@email.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-password">Mot de passe</label>
+                        <input type="password" id="signup-password" required placeholder="••••••••" minlength="6">
+                    </div>
+                    <button type="submit" class="btn">S'inscrire</button>
+                </form>
+            </div>
+
+            <!-- Formulaire Mot de passe oublié -->
+            <div id="reset-form" class="form-content">
+                <h2>Réinitialiser le mot de passe</h2>
+                <div class="info-text">
+                    Entrez votre adresse email. Si elle est enregistrée dans notre système, vous recevrez un lien pour créer un nouveau mot de passe.
+                </div>
+                <form id="password-reset-form">
+                    <div class="input-group">
+                        <label for="reset-email">Email</label>
+                        <input type="email" id="reset-email" required placeholder="exemple@email.com">
+                    </div>
+                    <button type="submit" class="btn">Envoyer le lien</button>
+                </form>
+                <div class="back-link">
+                    <a href="#" onclick="switchTab('connexion'); return false;">Retour à la connexion</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabaseClient.js"></script>
+    <script>
+        // Attendre que supabaseClient soit chargé
+        let supabase, getCurrentUser, getUserProfile, redirectByRole;
+
+        function initializeApp() {
+            if (window.supabaseClient) {
+                ({ supabase, getCurrentUser, getUserProfile, redirectByRole } = window.supabaseClient);
+                checkIfLoggedIn();
+            } else {
+                setTimeout(initializeApp, 100);
+            }
+        }
+
+        // Vérifier si déjà connecté au chargement
+        async function checkIfLoggedIn() {
+            const user = await getCurrentUser();
+            if (user) {
+                await redirectByRole();
+            }
+        }
+
+        // Initialiser l'app
+        window.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Gestion des onglets
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabName = this.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
+        function switchTab(tab) {
+            // Retirer la classe active de tous les onglets et formulaires
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-content').forEach(f => f.classList.remove('active'));
+            
+            // Ajouter la classe active à l'onglet et formulaire sélectionnés
+            const selectedTab = document.querySelector(`[data-tab="${tab}"]`);
+            const selectedForm = document.getElementById(`${tab}-form`);
+            
+            if (selectedTab) selectedTab.classList.add('active');
+            if (selectedForm) selectedForm.classList.add('active');
+            
+            hideMessage();
+        }
+
+        // Afficher un message
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type} show`;
+        }
+
+        // Cacher le message
+        function hideMessage() {
+            const msg = document.getElementById('message');
+            msg.classList.remove('show');
+        }
+
+        // Afficher/cacher le loader
+        function toggleLoader(show) {
+            const loader = document.getElementById('loader');
+            const activeForm = document.querySelector('.form-content.active');
+            
+            if (show) {
+                loader.classList.add('show');
+                if (activeForm) activeForm.style.display = 'none';
+            } else {
+                loader.classList.remove('show');
+                if (activeForm) activeForm.style.display = 'block';
+            }
+        }
+
+        // Formulaire de connexion
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+            toggleLoader(true);
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                // Connexion avec Supabase Auth
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                // Récupérer le profil utilisateur
+                const profile = await getUserProfile(data.user.id);
+
+                if (!profile) {
+                    throw new Error('Profil utilisateur introuvable. Contactez l\'administrateur.');
+                }
+
+                // Redirection selon le rôle
+                showMessage('Connexion réussie ! Redirection...', 'success');
+                
+                setTimeout(async () => {
+                    await redirectByRole();
+                }, 1500);
+
+            } catch (error) {
+                toggleLoader(false);
+                showMessage(error.message || 'Erreur de connexion', 'error');
+            }
+        });
+
+        // Formulaire d'inscription - VERSION SIMPLIFIÉE
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+            toggleLoader(true);
+
+            const prenom = document.getElementById('signup-prenom').value.trim();
+            const nom = document.getElementById('signup-nom').value.trim();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            try {
+                // 1. Créer le compte Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (authError) throw authError;
+
+                if (!authData.user) {
+                    throw new Error('Erreur lors de la création du compte');
+                }
+
+                console.log('Compte Auth créé:', authData.user.id);
+
+                // 2. Attendre que la session soit établie
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 3. Créer le profil directement (insertion publique autorisée)
+                const { error: profileError } = await supabase
+                    .from('users_profile')
+                    .insert({
+                        user_id: authData.user.id,
+                        prenom: prenom,
+                        nom: nom,
+                        role: 'user'
+                    });
+
+                if (profileError) {
+                    console.error('Erreur profil:', profileError);
+                    throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
+                }
+
+                console.log('Profil créé avec succès');
+
+                showMessage('Inscription réussie ! Comfirmer le lien Supabase Auth envoyé à votre email pour Finaliser Inscription Redirection...', 'success');
+
+                // 4. Redirection automatique vers index.html
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+
+            } catch (error) {
+                toggleLoader(false);
+                console.error('Erreur complète:', error);
+                showMessage(error.message || 'Erreur lors de l\'inscription', 'error');
+                
+                // Si l'erreur vient du profil, supprimer le compte Auth créé
+                if (error.message.includes('profil')) {
+                    try {
+                        await supabase.auth.signOut();
+                    } catch (e) {
+                        console.error('Erreur lors du nettoyage:', e);
+                    }
+                }
+            }
+        });
+
+        // Formulaire de réinitialisation du mot de passe
+        document.getElementById('password-reset-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+            toggleLoader(true);
+
+            const email = document.getElementById('reset-email').value;
+
+            try {
+                // Envoyer le lien de réinitialisation
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/reset-password.html`
+                });
+
+                if (error) throw error;
+
+                // Message de succès (même si l'email n'existe pas, pour la sécurité)
+                showMessage(
+                    'Si votre email est enregistré, vous recevrez un lien de réinitialisation dans quelques minutes.',
+                    'info'
+                );
+                
+                toggleLoader(false);
+
+                // Réinitialiser le formulaire
+                document.getElementById('password-reset-form').reset();
+
+            } catch (error) {
+                toggleLoader(false);
+                console.error('Erreur:', error);
+                // Message générique pour ne pas révéler si l'email existe ou non
+                showMessage(
+                    'Si votre email est enregistré, vous recevrez un lien de réinitialisation.',
+                    'info'
+                );
+            }
+        });
+    </script>
+</body>
+    </html>
