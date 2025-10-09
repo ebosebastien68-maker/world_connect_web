@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Réactions - Spiritualité</title>
+    <title>Réactions - World Connect</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -261,7 +261,8 @@
             gap: 12px;
         }
 
-        .reaction-item {
+        /* NOUVEAU: Style pour le conteneur d'un utilisateur et ses réactions */
+        .user-reaction-group {
             background: var(--bg-primary);
             padding: 15px;
             border-radius: 10px;
@@ -271,7 +272,7 @@
             transition: all 0.3s ease;
         }
 
-        .reaction-item:hover {
+        .user-reaction-group:hover {
             transform: translateX(5px);
             box-shadow: var(--shadow-sm);
         }
@@ -309,6 +310,14 @@
             font-size: 12px;
         }
 
+        /* NOUVEAU: Conteneur pour les badges de réaction d'un utilisateur */
+        .user-reactions-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
         .reaction-badge {
             padding: 8px 15px;
             border-radius: 20px;
@@ -319,6 +328,11 @@
             align-items: center;
             gap: 6px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+        
+        .reaction-badge:hover {
+            transform: scale(1.05);
         }
 
         .loader {
@@ -394,15 +408,20 @@
                 -webkit-overflow-scrolling: touch;
             }
 
-            .reaction-item {
+            /* AJUSTEMENT: Responsive pour les groupes de réaction */
+            .user-reaction-group {
                 flex-direction: column;
-                gap: 12px;
-                text-align: center;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .reaction-user-info {
+                width: 100%;
             }
 
-            .reaction-user-info {
-                flex-direction: column;
-                text-align: center;
+            .user-reactions-badges {
+                justify-content: flex-start;
+                width: 100%;
             }
         }
 
