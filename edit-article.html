@@ -180,6 +180,9 @@
             // Utilisation CONFORME au supabaseClient.js du projet
             const { supabase } = window.supabaseClient;
 
+            // NOM DU BUCKET IMPOSE
+            const BUCKET_NAME = "articles-images";
+
             const form = document.getElementById('edit-form');
             const submitBtn = document.getElementById('submit-btn');
             const btnText = document.getElementById('btn-text');
@@ -191,7 +194,6 @@
             const newImagesPreviewContainer = document.getElementById('new-images-preview');
 
             let newFilesToUpload = [];
-            let detectedBucketName = null;
 
             const urlParams = new URLSearchParams(window.location.search);
             const articleId = urlParams.get('id');
@@ -199,40 +201,6 @@
             if (!articleId) {
                 document.body.innerHTML = "<h1>Erreur : ID de l'article manquant.</h1>";
                 return;
-            }
-
-            // Fonction pour détecter automatiquement le nom du bucket
-            async function detectBucketName() {
-                try {
-                    const { data: buckets, error } = await supabase.storage.listBuckets();
-                    if (error) throw error;
-                    
-                    if (buckets && buckets.length > 0) {
-                        detectedBucketName = buckets[0].name;
-                        console.log('Bucket détecté automatiquement:', detectedBucketName);
-                        return detectedBucketName;
-                    } else {
-                        throw new Error('Aucun bucket trouvé dans le stockage Supabase');
-                    }
-                } catch (error) {
-                    console.error('Erreur lors de la détection du bucket:', error);
-                    return null;
-                }
-            }
-
-            // Fonction pour extraire le nom du bucket depuis une URL d'image
-            function extractBucketFromUrl(imageUrl) {
-                try {
-                    const url = new URL(imageUrl);
-                    const pathParts = url.pathname.split('/');
-                    const storageIndex = pathParts.indexOf('storage');
-                    if (storageIndex !== -1 && pathParts.length > storageIndex + 2) {
-                        return pathParts[storageIndex + 2];
-                    }
-                } catch (e) {
-                    console.warn('Impossible d\'extraire le bucket de l\'URL:', imageUrl);
-                }
-                return null;
             }
 
             async function fetchArticleData() {
@@ -252,14 +220,6 @@
                     
                     existingImagesContainer.innerHTML = '';
                     if (data.article_images && data.article_images.length > 0) {
-                        // Détecter le bucket depuis la première image si pas encore détecté
-                        if (!detectedBucketName && data.article_images[0].image_url) {
-                            detectedBucketName = extractBucketFromUrl(data.article_images[0].image_url);
-                            if (detectedBucketName) {
-                                console.log('Bucket détecté depuis l\'URL d\'image:', detectedBucketName);
-                            }
-                        }
-
                         data.article_images.forEach(img => {
                             const wrapper = document.createElement('div');
                             wrapper.className = 'image-wrapper';
@@ -296,16 +256,29 @@
                         .eq('image_id', imageId);
                     if (dbError) throw dbError;
 
-                    // Utiliser le bucket détecté
-                    const bucketToUse = detectedBucketName || await detectBucketName();
-                    if (!bucketToUse) {
-                        console.warn("Impossible de déterminer le bucket, suppression du stockage ignorée");
-                    } else {
-                        const imagePath = new URL(imageUrl).pathname.split(`/${bucketToUse}/`)[1];
+                    // Supprimer l'image du bucket articles-images
+                    try {
+                        // On isole le chemin dans le bucket
+                        const url = new URL(imageUrl);
+                        // /storage/v1/object/public/articles-images/public/1696795523452-filename.jpg
+                        // => il faut tout ce qui vient après "/articles-images/"
+                        const pathStart = url.pathname.indexOf(`/${BUCKET_NAME}/`);
+                        let imagePath = "";
+                        if (pathStart !== -1) {
+                            imagePath = url.pathname.substring(pathStart + BUCKET_NAME.length + 2); // +2 pour le double "/"
+                        } else {
+                            // fallback : on prend tout après /object/public/articles-images/
+                            const parts = url.pathname.split(`/${BUCKET_NAME}/`);
+                            if (parts.length === 2) imagePath = parts[1];
+                        }
+                        if (!imagePath) throw new Error("Impossible de trouver le chemin de l'image dans le bucket.");
+
                         const { error: storageError } = await supabase.storage
-                            .from(bucketToUse)
+                            .from(BUCKET_NAME)
                             .remove([imagePath]);
                         if (storageError) console.warn("Avertissement lors de la suppression du stockage:", storageError);
+                    } catch (e) {
+                        console.warn("Suppression du fichier storage échouée ou chemin mal extrait :", e);
                     }
 
                     document.getElementById(`image-${imageId}`).remove();
@@ -357,15 +330,9 @@
                     if (updateError) throw updateError;
 
                     if (newFilesToUpload.length > 0) {
-                        // S'assurer qu'on a détecté le bucket
-                        const bucketToUse = detectedBucketName || await detectBucketName();
-                        if (!bucketToUse) {
-                            throw new Error('Impossible de déterminer le bucket de stockage');
-                        }
-
                         const uploadPromises = newFilesToUpload.map(file => {
                             const filePath = `public/${Date.now()}-${file.name}`;
-                            return supabase.storage.from(bucketToUse).upload(filePath, file);
+                            return supabase.storage.from(BUCKET_NAME).upload(filePath, file);
                         });
                         
                         const uploadResults = await Promise.all(uploadPromises);
@@ -373,7 +340,7 @@
                         const newImageRecords = [];
                         for (const result of uploadResults) {
                             if (result.error) throw result.error;
-                            const { data: urlData } = supabase.storage.from(bucketToUse).getPublicUrl(result.data.path);
+                            const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(result.data.path);
                             newImageRecords.push({
                                 article_id: articleId,
                                 image_url: urlData.publicUrl
@@ -403,8 +370,7 @@
                 }
             });
 
-            // Détecter le bucket au chargement
-            await detectBucketName();
+            // Initialisation directe du bucket, pas de détection auto
             await fetchArticleData();
         });
     </script>
