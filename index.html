@@ -150,7 +150,6 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
-        /* NOUVEAU: Bouton flèche de recherche */
         .search-toggle-btn {
             position: fixed;
             bottom: 20px;
@@ -190,7 +189,6 @@
             border-color: #667eea;
         }
 
-        /* NOUVEAU: Panneau de recherche */
         .search-panel {
             position: fixed;
             bottom: -250px;
@@ -580,7 +578,6 @@
             font-weight: 600;
         }
 
-        /* NOUVEAU: Section commentaires/réactions divisée */
         .comments-reactions-section {
             display: flex;
             border-top: 1px solid var(--border-color);
@@ -687,6 +684,81 @@
             width: 100%;
             height: calc(100vh - var(--navbar-height) - 40px);
         }
+        
+        /* NOUVEAU: Styles pour les options d'administration */
+        .admin-options {
+            position: relative;
+            margin-left: auto; /* Pousse le bouton tout à droite */
+        }
+
+        .options-btn {
+            background: #ff4757;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(255, 71, 87, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .options-btn:hover {
+            transform: scale(1.1);
+            background: #e04250;
+        }
+
+        .options-menu {
+            display: none;
+            position: absolute;
+            top: 35px;
+            right: 0;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            min-width: 150px;
+            z-index: 10;
+            overflow: hidden;
+            animation: slideDown 0.2s ease;
+        }
+
+        .options-menu.show {
+            display: block;
+        }
+
+        .options-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .options-menu a:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .options-menu a.delete {
+             color: #ff4757;
+        }
+
+        .options-menu a.delete:hover {
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        .options-menu a i {
+            width: 16px;
+            text-align: center;
+        }
+
 
         @media (max-width: 768px) {
             :root {
@@ -895,12 +967,10 @@
         </div>
     </nav>
 
-    <!-- NOUVEAU: Bouton flèche de recherche -->
     <button class="search-toggle-btn" id="search-toggle-btn">
         <i class="fas fa-chevron-down"></i>
     </button>
 
-    <!-- NOUVEAU: Panneau de recherche -->
     <div class="search-panel" id="search-panel">
         <h3>
             <i class="fas fa-search"></i>
@@ -965,7 +1035,6 @@
         const themeIcon = document.getElementById('theme-icon');
         const body = document.body;
 
-        // Gestion du thème
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
             body.classList.add('dark-mode');
@@ -974,7 +1043,6 @@
 
         themeToggle.addEventListener('click', () => {
             body.classList.toggle('dark-mode');
-            
             if (body.classList.contains('dark-mode')) {
                 themeIcon.classList.replace('fa-moon', 'fa-sun');
                 localStorage.setItem('theme', 'dark');
@@ -984,7 +1052,6 @@
             }
         });
 
-        // NOUVEAU: Gestion du panneau de recherche
         const searchToggleBtn = document.getElementById('search-toggle-btn');
         const searchPanel = document.getElementById('search-panel');
         const searchInput = document.getElementById('search-input');
@@ -995,13 +1062,11 @@
         searchToggleBtn.addEventListener('click', () => {
             searchPanel.classList.toggle('show');
             searchToggleBtn.classList.toggle('active');
-            
             if (searchPanel.classList.contains('show')) {
                 searchInput.focus();
             }
         });
 
-        // Recherche d'articles
         searchBtn.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -1011,37 +1076,27 @@
 
         async function performSearch() {
             const query = searchInput.value.trim().toLowerCase();
-            
             if (!query) {
                 displayArticles(allArticles);
                 searchResultsInfo.style.display = 'none';
                 isSearching = false;
                 return;
             }
-
             isSearching = true;
-            
-            // Filtrer les articles par mots-clés
             const filteredArticles = allArticles.filter(article => {
                 const text = article.texte.toLowerCase();
                 const authorName = `${article.users_profile.prenom} ${article.users_profile.nom}`.toLowerCase();
-                
                 return text.includes(query) || authorName.includes(query);
             });
-
             searchResultsCount.textContent = filteredArticles.length;
             searchResultsInfo.style.display = 'block';
-            
             displayArticles(filteredArticles);
-            
-            // Fermer le panneau après la recherche
             setTimeout(() => {
                 searchPanel.classList.remove('show');
                 searchToggleBtn.classList.remove('active');
             }, 500);
         }
 
-        // Réinitialiser la recherche quand on efface l'input
         searchInput.addEventListener('input', (e) => {
             if (e.target.value.trim() === '' && isSearching) {
                 displayArticles(allArticles);
@@ -1053,42 +1108,29 @@
         const pageManager = {
             loadedPages: new Set(['home']),
             iframes: {},
-            
             async loadPage(pageName) {
-                if (this.loadedPages.has(pageName)) {
-                    return;
-                }
-
+                if (this.loadedPages.has(pageName)) return;
                 const pageContainer = document.getElementById(`${pageName}-page`);
                 const iframeContainer = pageContainer.querySelector('.iframe-container');
-                
                 if (!iframeContainer) return;
-
                 const loader = iframeContainer.querySelector('.iframe-loader');
                 if (loader) loader.style.display = 'block';
-
                 const iframe = document.createElement('iframe');
                 iframe.className = 'page-iframe';
                 iframe.src = `${pageName}.html`;
                 iframe.style.opacity = '0';
                 iframe.style.transition = 'opacity 0.3s';
-
                 iframe.onload = () => {
                     if (loader) loader.style.display = 'none';
                     iframe.style.opacity = '1';
                     this.loadedPages.add(pageName);
                 };
-
                 iframe.onerror = () => {
-                    if (loader) {
-                        loader.innerHTML = '<p style="color: #ff4757;">Erreur de chargement</p>';
-                    }
+                    if (loader) loader.innerHTML = '<p style="color: #ff4757;">Erreur de chargement</p>';
                 };
-
                 iframeContainer.appendChild(iframe);
                 this.iframes[pageName] = iframe;
             },
-
             preloadPage(pageName) {
                 if (!this.loadedPages.has(pageName)) {
                     this.loadPage(pageName);
@@ -1114,7 +1156,6 @@
                 document.getElementById('profile-item').style.display = 'flex';
                 document.getElementById('logout-item').style.display = 'flex';
                 document.getElementById('user-name').textContent = `${userProfile.prenom} ${userProfile.nom}`;
-                
                 if (userProfile.role === 'admin') {
                     document.getElementById('admin-item').style.display = 'flex';
                 }
@@ -1123,7 +1164,6 @@
 
         function initNavigation() {
             const pageTitle = document.getElementById('page-title');
-
             document.querySelectorAll('.nav-item[data-page]').forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1132,24 +1172,20 @@
                     navigateToPage(page, title);
                 });
             });
-
             document.querySelector('.menu-dropdown').addEventListener('click', function(e) {
                 e.stopPropagation();
                 const menu = document.getElementById('menu-dropdown');
                 menu.classList.toggle('show');
-                
                 if (menu.classList.contains('show')) {
                     pageTitle.textContent = 'Menu';
                 }
             });
-
             document.addEventListener('click', function(e) {
                 const menu = document.getElementById('menu-dropdown');
                 if (!e.target.closest('.menu-dropdown')) {
                     menu.classList.remove('show');
                 }
             });
-
             document.getElementById('logout-item').addEventListener('click', async function() {
                 await supabase.auth.signOut();
                 window.location.reload();
@@ -1158,19 +1194,14 @@
 
         function navigateToPage(page, title) {
             const pageTitle = document.getElementById('page-title');
-            
             document.querySelectorAll('.spa-page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
-
             document.getElementById(`${page}-page`).classList.add('active');
             document.querySelector(`[data-page="${page}"]`).classList.add('active');
-            
             pageTitle.textContent = title;
-
             if (page !== 'home') {
                 pageManager.loadPage(page);
             }
-
             if (page === 'messages') {
                 setTimeout(() => pageManager.preloadPage('notifications'), 1000);
             } else if (page === 'notifications') {
@@ -1182,25 +1213,16 @@
             try {
                 const { data: articles, error } = await supabase
                     .from('articles')
-                    .select(`
-                        *,
-                        users_profile(prenom, nom),
-                        article_images(image_url)
-                    `)
+                    .select(`*, users_profile(prenom, nom), article_images(image_url)`)
                     .order('date_created', { ascending: false });
-
                 if (error) throw error;
-
                 document.getElementById('loader').style.display = 'none';
-
                 if (!articles || articles.length === 0) {
                     document.getElementById('empty-state').style.display = 'block';
                     return;
                 }
-
                 allArticles = articles;
                 displayArticles(articles);
-
             } catch (error) {
                 console.error('Erreur:', error);
                 document.getElementById('loader').innerHTML = '<p style="color: red;">Erreur de chargement</p>';
@@ -1210,18 +1232,15 @@
         function displayArticles(articles) {
             const container = document.getElementById('articles-container');
             container.innerHTML = '';
-
             if (articles.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-search"></i>
                         <h3>Aucun article trouvé</h3>
                         <p>Essayez avec d'autres mots-clés</p>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
-
             articles.forEach(article => {
                 container.appendChild(createArticleCard(article));
             });
@@ -1230,29 +1249,36 @@
         function createArticleCard(article) {
             const card = document.createElement('div');
             card.className = 'article-card';
-            
             const author = article.users_profile;
             const initials = `${author.prenom[0]}${author.nom[0]}`.toUpperCase();
             const images = article.article_images || [];
-            
-            let imageClass = '';
-            if (images.length === 1) imageClass = 'single';
-            else if (images.length === 2) imageClass = 'double';
-            else if (images.length > 2) imageClass = 'multiple';
-
+            let imageClass = images.length === 1 ? 'single' : (images.length === 2 ? 'double' : (images.length > 2 ? 'multiple' : ''));
             const imagesHTML = images.length > 0 ? `
                 <div class="article-images ${imageClass}">
                     ${images.map(img => `<img src="${img.image_url}" alt="Image">`).join('')}
-                </div>
-            ` : '';
-
+                </div>` : '';
             const linksHTML = (article.texte_url || article.vente_url || article.whatsapp_url) ? `
                 <div class="article-links">
                     ${article.texte_url ? `<button class="link-btn" onclick="window.open('${article.texte_url}', '_blank')"><i class="fas fa-link"></i> Lien</button>` : ''}
                     ${article.vente_url ? `<button class="link-btn" onclick="window.open('${article.vente_url}', '_blank')"><i class="fas fa-shopping-cart"></i> Acheter</button>` : ''}
                     ${article.whatsapp_url ? `<button class="link-btn" onclick="window.open('${article.whatsapp_url}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>` : ''}
-                </div>
-            ` : '';
+                </div>` : '';
+
+            // NOUVEAU: Logique pour afficher les options d'administration
+            const adminOptionsHTML = (userProfile && userProfile.role === 'admin') ? `
+                <div class="admin-options">
+                    <button class="options-btn" onclick="toggleAdminMenu('options-menu-${article.article_id}')">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="options-menu" id="options-menu-${article.article_id}">
+                        <a onclick="editArticle('${article.article_id}')">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <a class="delete" onclick="deleteArticle('${article.article_id}')">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </a>
+                    </div>
+                </div>` : '';
 
             card.innerHTML = `
                 <div class="article-header">
@@ -1260,13 +1286,10 @@
                     <div class="author-info">
                         <h3>${author.prenom} ${author.nom}</h3>
                         <p>${new Date(article.date_created).toLocaleDateString('fr-FR', { 
-                            day: 'numeric', 
-                            month: 'long', 
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
+                            day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
                         })}</p>
                     </div>
+                    ${adminOptionsHTML}
                 </div>
                 <div class="article-content">
                     <div class="article-text">${article.texte}</div>
@@ -1274,37 +1297,57 @@
                     ${linksHTML}
                 </div>
                 <div class="reactions">
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'like')">
-                        <i class="fas fa-thumbs-up"></i>
-                        <span>${article.reaction_like || 0}</span>
-                    </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'love')">
-                        <i class="fas fa-heart"></i>
-                        <span>${article.reaction_love || 0}</span>
-                    </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'rire')">
-                        <i class="fas fa-laugh"></i>
-                        <span>${article.reaction_rire || 0}</span>
-                    </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'colere')">
-                        <i class="fas fa-angry"></i>
-                        <span>${article.reaction_colere || 0}</span>
-                    </button>
+                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'like')"><i class="fas fa-thumbs-up"></i><span>${article.reaction_like || 0}</span></button>
+                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'love')"><i class="fas fa-heart"></i><span>${article.reaction_love || 0}</span></button>
+                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'rire')"><i class="fas fa-laugh"></i><span>${article.reaction_rire || 0}</span></button>
+                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'colere')"><i class="fas fa-angry"></i><span>${article.reaction_colere || 0}</span></button>
                 </div>
                 <div class="comments-reactions-section">
-                    <div class="comments-toggle-large" onclick="toggleComments('${article.article_id}')">
-                        <i class="fas fa-comment"></i>
-                        <span>Commentaires</span>
-                    </div>
-                    <div class="user-reactions-btn" onclick="viewUserReactions('${article.article_id}')">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <div class="comments-toggle-large" onclick="toggleComments('${article.article_id}')"><i class="fas fa-comment"></i><span>Commentaires</span></div>
+                    <div class="user-reactions-btn" onclick="viewUserReactions('${article.article_id}')"><i class="fas fa-user"></i></div>
                 </div>
-                <div class="comments-section" id="comments-${article.article_id}"></div>
-            `;
-
+                <div class="comments-section" id="comments-${article.article_id}"></div>`;
             return card;
         }
+
+        // NOUVEAU: Fonctions pour la gestion administrateur
+        function toggleAdminMenu(menuId) {
+            document.querySelectorAll('.options-menu.show').forEach(menu => {
+                if (menu.id !== menuId) {
+                    menu.classList.remove('show');
+                }
+            });
+            document.getElementById(menuId)?.classList.toggle('show');
+        }
+
+        // Fermer les menus en cliquant n'importe où sur la page
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.admin-options')) {
+                document.querySelectorAll('.options-menu.show').forEach(menu => menu.classList.remove('show'));
+            }
+        });
+
+        function editArticle(articleId) {
+            // Ici, vous pouvez rediriger vers une page d'édition.
+            // Par exemple: window.location.href = `edit-article.html?id=${articleId}`;
+            alert(`Fonction "Modifier" pour l'article ID: ${articleId}. Redirection à implémenter.`);
+        }
+
+        async function deleteArticle(articleId) {
+            const confirmation = confirm("Êtes-vous sûr de vouloir supprimer cet article définitivement ? Cette action est irréversible.");
+            if (confirmation) {
+                try {
+                    const { error } = await supabase.from('articles').delete().eq('article_id', articleId);
+                    if (error) throw error;
+                    alert("L'article a été supprimé avec succès.");
+                    loadArticles(); // Recharger les articles pour mettre à jour la vue
+                } catch (error) {
+                    console.error("Erreur lors de la suppression:", error);
+                    alert("Une erreur s'est produite lors de la suppression de l'article.");
+                }
+            }
+        }
+
 
         async function handleReaction(articleId, reactionType) {
             if (!currentUser || !userProfile) {
@@ -1312,33 +1355,14 @@
                 window.location.href = 'connexion.html';
                 return;
             }
-
             try {
-                const { data: existing } = await supabase
-                    .from('article_reactions')
-                    .select('*')
-                    .eq('article_id', articleId)
-                    .eq('user_id', currentUser.id)
-                    .eq('reaction_type', reactionType)
-                    .single();
-
+                const { data: existing } = await supabase.from('article_reactions').select('*').eq('article_id', articleId).eq('user_id', currentUser.id).eq('reaction_type', reactionType).single();
                 if (existing) {
-                    await supabase
-                        .from('article_reactions')
-                        .delete()
-                        .eq('reaction_id', existing.reaction_id);
+                    await supabase.from('article_reactions').delete().eq('reaction_id', existing.reaction_id);
                 } else {
-                    await supabase
-                        .from('article_reactions')
-                        .insert({
-                            article_id: articleId,
-                            user_id: currentUser.id,
-                            reaction_type: reactionType
-                        });
+                    await supabase.from('article_reactions').insert({ article_id: articleId, user_id: currentUser.id, reaction_type: reactionType });
                 }
-
                 loadArticles();
-
             } catch (error) {
                 console.error('Erreur réaction:', error);
             }
@@ -1347,7 +1371,6 @@
         function toggleComments(articleId) {
             const section = document.getElementById(`comments-${articleId}`);
             section.classList.toggle('show');
-            
             if (section.classList.contains('show') && section.innerHTML === '') {
                 loadComments(articleId, section);
             }
@@ -1355,55 +1378,39 @@
 
         async function loadComments(articleId, container) {
             container.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-
             try {
-                const { data: comments, error } = await supabase
-                    .from('sessions_commentaires')
-                    .select(`
-                        *,
-                        users_profile(prenom, nom)
-                    `)
-                    .eq('article_id', articleId)
-                    .order('date_created', { ascending: false });
-
+                const { data: comments, error } = await supabase.from('sessions_commentaires').select(`*, users_profile(prenom, nom)`).eq('article_id', articleId).order('date_created', { ascending: false });
                 if (error) throw error;
-
                 if (window.CommentsWidget) {
                     window.CommentsWidget.render(container, articleId, comments, currentUser, userProfile);
                 }
-
             } catch (error) {
                 console.error('Erreur:', error);
                 container.innerHTML = '<p style="color: red; padding: 20px;">Erreur de chargement</p>';
             }
         }
 
-        // NOUVEAU: Fonction pour voir les utilisateurs qui ont réagi
         async function viewUserReactions(articleId) {
             if (!currentUser || !userProfile) {
                 alert('Connectez-vous pour voir les réactions');
                 window.location.href = 'connexion.html';
                 return;
             }
-
-            // Redirection vers la page usereact.js avec l'ID de l'article
-            // Cette page sera créée plus tard
             window.location.href = `usereact.html?article_id=${articleId}`;
         }
-
-        // Exposer la fonction globalement pour les onclick
+        
+        // Exposer les fonctions à la portée globale pour les `onclick`
         window.viewUserReactions = viewUserReactions;
+        window.toggleAdminMenu = toggleAdminMenu;
+        window.editArticle = editArticle;
+        window.deleteArticle = deleteArticle;
+        window.handleReaction = handleReaction; // S'assurer que les anciennes fonctions sont aussi exposées
+        window.toggleComments = toggleComments;
 
         async function loadNotificationCount() {
             try {
-                const { count, error } = await supabase
-                    .from('notifications')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', currentUser.id)
-                    .eq('read_status', false);
-
+                const { count, error } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id).eq('read_status', false);
                 if (error) throw error;
-
                 const badge = document.getElementById('notif-badge');
                 if (count > 0) {
                     badge.textContent = count;
@@ -1418,14 +1425,8 @@
 
         async function loadMessageCount() {
             try {
-                const { count, error } = await supabase
-                    .from('messages')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('receiver_id', currentUser.id)
-                    .eq('read_status', false);
-
+                const { count, error } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', currentUser.id).eq('read_status', false);
                 if (error) throw error;
-
                 const badge = document.getElementById('message-badge');
                 if (count > 0) {
                     badge.textContent = count;
@@ -1438,7 +1439,6 @@
             }
         }
 
-        // Rafraîchir les compteurs toutes les 30 secondes
         setInterval(() => {
             if (currentUser) {
                 loadNotificationCount();
@@ -1447,4 +1447,4 @@
         }, 30000);
     </script>
 </body>
-    </html>
+</html>
