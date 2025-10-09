@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Connect Web</title>
+    <title>Spiritualité</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -24,6 +24,14 @@
             --shadow-md: 0 2px 15px rgba(0,0,0,0.1);
             --shadow-lg: 0 4px 20px rgba(0,0,0,0.15);
             --navbar-height: 60px;
+            /* Couleurs de l'arc-en-ciel */
+            --c1: #ff0000; /* Rouge */
+            --c2: #ff7f00; /* Orange */
+            --c3: #ffff00; /* Jaune */
+            --c4: #00ff00; /* Vert */
+            --c5: #0000ff; /* Bleu */
+            --c6: #4b0082; /* Indigo */
+            --c7: #9400d3; /* Violet */
         }
 
         body {
@@ -51,30 +59,67 @@
             left: 0;
             right: 0;
             height: var(--navbar-height);
-            background: linear-gradient(
-                90deg,
-                #FF0000 0%,
-                #FF7F00 14.28%,
-                #FFFF00 28.56%,
-                #00FF00 42.84%,
-                #0000FF 57.12%,
-                #4B0082 71.4%,
-                #9400D3 85.68%,
-                #FF0000 100%
-            );
+            /* MODIFICATION : Le fond sera géré par l'effet rainbow-effect */
+            background: #000000; /* Couleur de secours */
             box-shadow: var(--shadow-md);
             padding: 0 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
+            overflow: hidden; /* Important pour l'effet */
+        }
+        
+        /* NOUVEAU : Animation 3D Arc-en-ciel */
+        .rainbow-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg, 
+                var(--c1) 0%, 
+                var(--c2) 14.28%, 
+                var(--c3) 28.56%, 
+                var(--c4) 42.84%, 
+                var(--c5) 57.12%, 
+                var(--c6) 71.4%, 
+                var(--c7) 85.68%, 
+                var(--c1) 100%
+            );
+            background-size: 200% 100%; /* Permet le décalage de l'animation */
+            animation: rainbow-shift 10s linear infinite;
+            /* Effet 3D/Perspective moderne */
+            transform: skewY(-1deg) scaleY(1.1); /* Donne un léger angle et une légère épaisseur */
+            opacity: 0.85;
+        }
+
+        @keyframes rainbow-shift {
+            0% {
+                background-position: 0% 50%;
+                filter: hue-rotate(0deg);
+            }
+            100% {
+                background-position: 200% 50%; /* Déplace le dégradé horizontalement */
+                filter: hue-rotate(360deg); /* Ajoute un effet de couleur qui tourne */
+            }
+        }
+        /* FIN NOUVEAU */
+        
+        /* Ajustement Z-index pour que le contenu reste au-dessus de l'animation */
+        .navbar-left,
+        .navbar-center,
+        .navbar-right {
+            position: relative; /* Crée un nouveau contexte d'empilement */
+            z-index: 10; /* Assure que le contenu est au-dessus de .rainbow-effect (qui a z-index implicite 0) */
         }
 
         .navbar-left {
             color: white;
             font-size: 20px;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8); /* Ombre plus forte pour la lisibilité */
             letter-spacing: 0.5px;
             flex-shrink: 0;
         }
@@ -106,6 +151,7 @@
         .theme-toggle i {
             font-size: 18px;
             color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Ombre pour l'icône */
         }
 
         .navbar-right {
@@ -141,52 +187,57 @@
 
         .nav-item i {
             font-size: 20px;
-            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); /* Ombre plus forte pour les icônes */
         }
 
         .nav-item span {
             font-size: 11px;
             font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Ombre plus forte pour le texte */
         }
 
+        /* MODIFICATION : Nouvel emplacement et style pour le bouton de recherche */
         .search-toggle-btn {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
+            top: var(--navbar-height); /* Placé juste sous la barre de navigation */
+            left: 10%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            background: #1c1c1c; /* Couleur sombre pour s'harmoniser avec la barre noire */
+            border: none;
+            border-radius: 0 0 12px 12px; /* Forme d'onglet */
+            width: 60px; /* Plus large que haut */
+            height: 30px; /* Moins haut */
             cursor: pointer;
-            display: flex;
+            display: flex; /* Assure que le bouton est visible par défaut sur la page d'accueil */
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            z-index: 999;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
             transition: all 0.3s ease;
         }
 
         .search-toggle-btn:hover {
-            transform: translateX(-50%) scale(1.1);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            background: #333; /* Changement de couleur au survol */
+            transform: translateX(-50%) translateY(2px); /* Léger mouvement vers le bas */
         }
 
         .search-toggle-btn i {
-            font-size: 22px;
-            color: #667eea;
+            font-size: 16px; /* Taille de l'icône ajustée */
+            color: #ffffff; /* Icône blanche pour le contraste */
             transition: transform 0.3s ease;
         }
+        /* FIN DES MODIFICATIONS DU BOUTON */
 
         .search-toggle-btn.active i {
             transform: rotate(180deg);
         }
 
         body.dark-mode .search-toggle-btn {
-            background: rgba(45, 45, 45, 0.95);
-            border-color: #667eea;
+            background: #2d2d2d;
+        }
+        
+        body.dark-mode .search-toggle-btn:hover {
+            background: #404040;
         }
 
         .search-panel {
@@ -810,14 +861,14 @@
                 top: calc(var(--navbar-height) - 2px);
             }
 
+            /* Ajustement pour le bouton de recherche sur mobile */
             .search-toggle-btn {
-                width: 45px;
-                height: 45px;
-                bottom: 15px;
+                width: 50px;
+                height: 25px;
             }
-
+            
             .search-toggle-btn i {
-                font-size: 20px;
+                font-size: 14px;
             }
 
             .search-panel {
@@ -920,7 +971,8 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-left">World Connect</div>
+        <div class="rainbow-effect"></div>
+        <div class="navbar-left">Spiritualité</div>
         <div class="navbar-center">
             <button class="theme-toggle" id="theme-toggle">
                 <i class="fas fa-moon" id="theme-icon"></i>
@@ -1199,6 +1251,18 @@
             document.getElementById(`${page}-page`).classList.add('active');
             document.querySelector(`[data-page="${page}"]`).classList.add('active');
             pageTitle.textContent = title;
+
+            // MODIFICATION : Gérer la visibilité du bouton de recherche
+            if (page === 'home') {
+                searchToggleBtn.style.display = 'flex'; // Affiche le bouton sur la page d'accueil
+            } else {
+                searchToggleBtn.style.display = 'none'; // Cache le bouton sur les autres pages
+                // On s'assure aussi de fermer le panneau de recherche s'il est ouvert
+                searchPanel.classList.remove('show');
+                searchToggleBtn.classList.remove('active');
+            }
+            // FIN DE LA MODIFICATION
+
             if (page !== 'home') {
                 pageManager.loadPage(page);
             }
@@ -1264,7 +1328,6 @@
                     ${article.whatsapp_url ? `<button class="link-btn" onclick="window.open('${article.whatsapp_url}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>` : ''}
                 </div>` : '';
 
-            // NOUVEAU: Logique pour afficher les options d'administration
             const adminOptionsHTML = (userProfile && userProfile.role === 'admin') ? `
                 <div class="admin-options">
                     <button class="options-btn" onclick="toggleAdminMenu('options-menu-${article.article_id}')">
@@ -1310,7 +1373,6 @@
             return card;
         }
 
-        // NOUVEAU: Fonctions pour la gestion administrateur
         function toggleAdminMenu(menuId) {
             document.querySelectorAll('.options-menu.show').forEach(menu => {
                 if (menu.id !== menuId) {
@@ -1320,7 +1382,6 @@
             document.getElementById(menuId)?.classList.toggle('show');
         }
 
-        // Fermer les menus en cliquant n'importe où sur la page
         document.addEventListener('click', function(event) {
             if (!event.target.closest('.admin-options')) {
                 document.querySelectorAll('.options-menu.show').forEach(menu => menu.classList.remove('show'));
@@ -1337,7 +1398,7 @@
                     const { error } = await supabase.from('articles').delete().eq('article_id', articleId);
                     if (error) throw error;
                     alert("L'article a été supprimé avec succès.");
-                    loadArticles(); // Recharger les articles pour mettre à jour la vue
+                    loadArticles();
                 } catch (error) {
                     console.error("Erreur lors de la suppression:", error);
                     alert("Une erreur s'est produite lors de la suppression de l'article.");
@@ -1396,12 +1457,11 @@
             window.location.href = `usereact.html?article_id=${articleId}`;
         }
         
-        // Exposer les fonctions à la portée globale pour les `onclick`
         window.viewUserReactions = viewUserReactions;
         window.toggleAdminMenu = toggleAdminMenu;
         window.editArticle = editArticle;
         window.deleteArticle = deleteArticle;
-        window.handleReaction = handleReaction; // S'assurer que les anciennes fonctions sont aussi exposées
+        window.handleReaction = handleReaction;
         window.toggleComments = toggleComments;
 
         async function loadNotificationCount() {
