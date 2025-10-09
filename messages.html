@@ -26,15 +26,27 @@
         .messages-container { flex: 1; overflow: hidden; background: white; margin: 15px; border-radius: 15px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); display: flex; flex-direction: column; position: relative; }
         
         /* Zone de chat principale */
-        .chat-area { flex: 1; display: flex; flex-direction: column; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; min-height: 0; }
         
-        .chat-header { padding: 15px 20px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 12px; background: #fafbfc; }
+        .chat-header { padding: 15px 20px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 12px; background: #fafbfc; flex-shrink: 0; }
         .chat-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; flex-shrink: 0; }
         .chat-user-info { flex: 1; }
         .chat-user-info h3 { color: #333; font-size: 15px; margin-bottom: 2px; }
         .chat-user-info p { color: #999; font-size: 12px; }
         
-        .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #f5f7fa; }
+        /* MODIFIÉ : Zone des messages avec défilement */
+        .chat-messages { 
+            flex: 1; 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            background: #f5f7fa;
+            min-height: 0; /* Important pour le défilement */
+        }
+        
         .message-bubble { max-width: 75%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -44,17 +56,15 @@
         .message-time { font-size: 10px; opacity: 0.7; }
         .message-image { max-width: 100%; max-height: 250px; border-radius: 12px; margin-top: 8px; cursor: pointer; }
         
-        .chat-input-area { padding: 15px 20px; border-top: 1px solid #e0e0e0; display: flex; gap: 10px; align-items: center; background: white; }
+        .chat-input-area { padding: 15px 20px; border-top: 1px solid #e0e0e0; display: flex; gap: 10px; align-items: center; background: white; flex-shrink: 0; }
         .attach-btn { background: #f0f0f0; border: none; color: #667eea; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: all 0.3s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .attach-btn:hover { background: #e0e0e0; transform: scale(1.05); }
         
-        /* NOUVEAU : Wrapper pour le champ de texte et l'icône d'envoi */
         .input-wrapper { flex: 1; position: relative; display: flex; align-items: center; }
-        .message-input { width: 100%; padding: 12px 45px 12px 18px; /* Augmentation du padding à droite */ border: 2px solid #e0e0e0; border-radius: 25px; font-size: 14px; font-family: inherit; transition: border-color 0.3s; }
+        .message-input { width: 100%; padding: 12px 45px 12px 18px; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 14px; font-family: inherit; transition: border-color 0.3s; }
         .message-input:focus { outline: none; border-color: #667eea; }
         
-        /* NOUVEAU : Icône d'envoi dans le champ de texte */
-        .input-send-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #667eea; cursor: pointer; transition: color 0.3s, transform 0.2s; display: none; /* Caché par défaut */ }
+        .input-send-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #667eea; cursor: pointer; transition: color 0.3s, transform 0.2s; display: none; }
         .input-send-icon:hover { color: #764ba2; transform: translateY(-50%) scale(1.1); }
         
         .send-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 16px; flex-shrink: 0; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
@@ -99,6 +109,12 @@
         
         .loading { text-align: center; padding: 30px; color: #999; }
         .loading i { font-size: 30px; }
+        
+        /* AJOUTÉ : Style personnalisé pour la scrollbar */
+        .chat-messages::-webkit-scrollbar { width: 8px; }
+        .chat-messages::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; }
+        .chat-messages::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
         
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -193,7 +209,6 @@
             }
         }
 
-        // ===== USER =====
         async function initUserChat() {
             const storedAdminId = localStorage.getItem(`default_admin_${currentUser.id}`);
             let defaultAdmin = null;
@@ -230,7 +245,6 @@
             await loadConversations();
         }
 
-        // ===== ADMIN =====
         async function initAdminChat() {
             await loadConversations();
             
@@ -241,7 +255,6 @@
             }
         }
 
-        // ===== CONVERSATIONS =====
         async function loadConversations() {
             try {
                 const { data: messages, error } = await supabase
@@ -352,7 +365,6 @@
             });
         }
 
-        // ===== CONTACTS =====
         async function loadContacts() {
             try {
                 const role = userProfile.role === 'user' ? 'admin' : null;
@@ -435,13 +447,11 @@
             }
         }
 
-        // ===== CHAT =====
         function openChat(user) {
             currentChatUser = user;
             const initials = `${user.prenom[0]}${user.nom[0]}`.toUpperCase();
             const chatArea = document.getElementById('chat-area');
 
-            // MODIFIÉ : Mise à jour de la structure HTML de la zone de saisie
             chatArea.innerHTML = `
                 <div class="chat-header">
                     <div class="chat-avatar">${initials}</div>
@@ -480,16 +490,13 @@
         function updateSendButtonState() {
             const input = document.getElementById('message-input');
             const sendBtn = document.getElementById('send-btn');
-            const inputSendIcon = document.getElementById('input-send-icon'); // NOUVEAU
+            const inputSendIcon = document.getElementById('input-send-icon');
             
             if (input && sendBtn && inputSendIcon) {
                 const hasText = input.value.trim().length > 0;
                 
-                // Gère le bouton principal
                 sendBtn.disabled = !hasText;
                 sendBtn.style.opacity = hasText ? '1' : '0.5';
-                
-                // NOUVEAU : Gère l'icône dans le champ de texte
                 inputSendIcon.style.display = hasText ? 'block' : 'none';
             }
         }
@@ -588,7 +595,7 @@
                     .update({ read_status: true })
                     .eq('sender_id', otherUserId)
                     .eq('receiver_id', currentUser.id);
-                loadConversations();
+                await loadConversations();
             } catch (error) {
                 console.error('Erreur:', error);
             }
@@ -612,7 +619,6 @@
                 .subscribe();
         }
 
-        // ===== UTILITAIRES =====
         function showEmptyState(title, subtitle = '') {
             document.getElementById('chat-area').innerHTML = `
                 <div class="empty-state">
@@ -664,7 +670,6 @@
             return div.innerHTML;
         }
 
-        // Fermeture des modals au clic à l'extérieur
         document.getElementById('conversations-modal').addEventListener('click', function(e) {
             if (e.target === this) closeConversationsModal();
         });
@@ -673,7 +678,6 @@
             if (e.target === this) closeContactsModal();
         });
 
-        // Nettoyage à la fermeture
         window.addEventListener('beforeunload', () => {
             if (messageSubscription) supabase.removeChannel(messageSubscription);
         });
