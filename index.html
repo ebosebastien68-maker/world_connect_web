@@ -1327,11 +1327,8 @@
             }
         });
 
-        function editArticle(articleId) {
-            // Ici, vous pouvez rediriger vers une page d'édition.
-            // Par exemple: window.location.href = `edit-article.html?id=${articleId}`;
-            alert(`Fonction "Modifier" pour l'article ID: ${articleId}. Redirection à implémenter.`);
-        }
+        function editArticle(articleId) {window.location.href = `edit-article.html?id=${articleId}`;
+                                        }
 
         async function deleteArticle(articleId) {
             const confirmation = confirm("Êtes-vous sûr de vouloir supprimer cet article définitivement ? Cette action est irréversible.");
