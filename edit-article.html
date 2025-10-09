@@ -172,9 +172,14 @@
         <div id="form-message"></div>
     </div>
 
+    <!-- CHARGEMENT CONFORME -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="supabaseClient.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            // Utilisation CONFORME au supabaseClient.js du projet
+            const { supabase } = window.supabaseClient;
+
             const form = document.getElementById('edit-form');
             const submitBtn = document.getElementById('submit-btn');
             const btnText = document.getElementById('btn-text');
@@ -185,7 +190,6 @@
             const newImagesPreviewGroup = document.getElementById('new-images-preview-group');
             const newImagesPreviewContainer = document.getElementById('new-images-preview');
 
-            const { supabase } = window.supabaseClient;
             let newFilesToUpload = [];
             let detectedBucketName = null;
 
