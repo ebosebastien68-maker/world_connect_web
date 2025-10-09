@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Réactions - World Connect</title>
+    <title>Réactions - Spiritualité</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Votre CSS combiné */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         :root {
             --bg-primary: #f5f7fa;
             --bg-secondary: #ffffff;
@@ -24,12 +24,14 @@
             --shadow-md: 0 2px 15px rgba(0,0,0,0.1);
             --shadow-lg: 0 4px 20px rgba(0,0,0,0.15);
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg-primary);
             transition: background 0.3s ease, color 0.3s ease;
             padding: 20px;
         }
+
         body.dark-mode {
             --bg-primary: #1a1a1a;
             --bg-secondary: #2d2d2d;
@@ -41,55 +43,388 @@
             --shadow-md: 0 2px 15px rgba(0,0,0,0.4);
             --shadow-lg: 0 4px 20px rgba(0,0,0,0.5);
         }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { background: var(--bg-secondary); padding: 20px; border-radius: 15px; box-shadow: var(--shadow-md); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { color: var(--text-primary); font-size: 24px; display: flex; align-items: center; gap: 12px; }
-        .header h1 i { color: #667eea; }
-        .back-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
-        .back-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5); }
-        .article-info-header { background: var(--bg-secondary); padding: 20px; border-radius: 15px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
-        .article-mini-card { display: flex; flex-direction: column; gap: 12px; }
-        .article-mini-author { display: flex; align-items: center; gap: 12px; }
-        .avatar-mini { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4); }
-        .article-mini-author h4 { color: var(--text-primary); font-size: 16px; margin-bottom: 3px; }
-        .article-mini-author p { color: var(--text-tertiary); font-size: 12px; }
-        .article-mini-text { color: var(--text-secondary); font-size: 14px; line-height: 1.5; padding: 10px; background: var(--bg-primary); border-radius: 8px; border-left: 3px solid #667eea; }
-        .reactions-summary { background: var(--bg-secondary); padding: 20px; border-radius: 15px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
-        .reactions-summary h3 { color: var(--text-primary); font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        .reactions-summary h3 i { color: #667eea; }
-        .reactions-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-        .reaction-stat { background: var(--bg-primary); padding: 15px; border-radius: 10px; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; }
-        .reaction-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-        .reaction-stat i { font-size: 24px; }
-        .stat-info { display: flex; flex-direction: column; }
-        .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
-        .stat-count { font-size: 20px; color: var(--text-primary); font-weight: bold; }
-        .reactions-tabs { background: var(--bg-secondary); padding: 15px; border-radius: 15px; box-shadow: var(--shadow-sm); margin-bottom: 20px; display: flex; gap: 10px; overflow-x: auto; flex-wrap: wrap; }
-        .tab-btn { background: var(--bg-primary); border: 2px solid transparent; padding: 10px 18px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-secondary); transition: all 0.3s ease; white-space: nowrap; }
-        .tab-btn:hover { background: rgba(102, 126, 234, 0.1); color: #667eea; }
-        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: #667eea; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
-        .reactions-list { background: var(--bg-secondary); padding: 20px; border-radius: 15px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; }
-        .reaction-item { background: var(--bg-primary); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; }
-        .reaction-item:hover { transform: translateX(5px); box-shadow: var(--shadow-sm); }
-        .reaction-user-info { display: flex; align-items: center; gap: 12px; flex: 1; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4); flex-shrink: 0; }
-        .user-details h4 { color: var(--text-primary); font-size: 15px; margin-bottom: 3px; }
-        .user-details p { color: var(--text-tertiary); font-size: 12px; }
-        .reaction-badge { padding: 8px 15px; border-radius: 20px; color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-        .loader { text-align: center; padding: 50px 20px; }
-        .spinner { border: 3px solid var(--border-color); border-top: 3px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-tertiary); }
-        .empty-state i { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }
-        .empty-state h3 { font-size: 20px; margin-bottom: 10px; }
-        .empty-state-small { text-align: center; padding: 30px 20px; color: var(--text-tertiary); }
-        @media (max-width: 768px) { body { padding: 15px; } .header { flex-direction: column; gap: 15px; text-align: center; } .header h1 { font-size: 20px; } .back-btn { width: 100%; justify-content: center; } .reactions-stats { grid-template-columns: repeat(2, 1fr); } .reactions-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; } .reaction-item { flex-direction: column; gap: 12px; text-align: center; } .reaction-user-info { flex-direction: column; text-align: center; } }
-        @media (max-width: 480px) { .header h1 { font-size: 18px; } .reactions-stats { grid-template-columns: 1fr; } .tab-btn { font-size: 13px; padding: 8px 15px; } }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: var(--text-primary);
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 i {
+            color: #667eea;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+
+        .article-info-header {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+
+        .article-mini-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .article-mini-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-mini {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .article-mini-author h4 {
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .article-mini-author p {
+            color: var(--text-tertiary);
+            font-size: 12px;
+        }
+
+        .article-mini-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 10px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .reactions-summary {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+
+        .reactions-summary h3 {
+            color: var(--text-primary);
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .reactions-summary h3 i {
+            color: #667eea;
+        }
+
+        .reactions-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .reaction-stat {
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .reaction-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .reaction-stat i {
+            font-size: 24px;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .stat-count {
+            font-size: 20px;
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .reactions-tabs {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--bg-primary);
+            border: 2px solid transparent;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .reactions-list {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .reaction-item {
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .reaction-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .reaction-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            flex-shrink: 0;
+        }
+
+        .user-details h4 {
+            color: var(--text-primary);
+            font-size: 15px;
+            margin-bottom: 3px;
+        }
+
+        .user-details p {
+            color: var(--text-tertiary);
+            font-size: 12px;
+        }
+
+        .reaction-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .loader {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .spinner {
+            border: 3px solid var(--border-color);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-small {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-tertiary);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .back-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .reactions-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .reactions-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .reaction-item {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .reaction-user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .reactions-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-btn {
+                font-size: 13px;
+                padding: 8px 15px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="header">
+        <div class="header">
             <h1>
                 <i class="fas fa-heart"></i>
                 Réactions sur l'article
@@ -98,247 +433,25 @@
                 <i class="fas fa-arrow-left"></i>
                 Retour
             </button>
-        </header>
+        </div>
 
-        <main id="user-reactions-container">
+        <div id="user-reactions-container">
             <div class="loader">
                 <div class="spinner"></div>
-                <p style="color: var(--text-tertiary);">Chargement des réactions...</p>
+                <p style="margin-top: 15px; color: var(--text-tertiary);">Chargement des réactions...</p>
             </div>
-        </main>
+        </div>
     </div>
 
     <script src="supabaseClient.js"></script>
-    
+    <script src="usereact.js"></script>
+
     <script>
-        // Synchroniser le thème avec la page principale (cette partie est bonne)
+        // Synchroniser le thème avec la page principale
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-mode');
         }
-
-        // Début du script 'usereact.js' intégré
-        document.addEventListener('DOMContentLoaded', () => {
-            const mainContainer = document.getElementById('user-reactions-container');
-            let allReactions = []; // Pour stocker les réactions et éviter de les re-fetcher
-
-            // Map pour associer les types de réaction à des icônes et couleurs
-            const reactionDetails = {
-                'like': { icon: 'fa-thumbs-up', color: '#667eea', label: 'J\'aime' },
-                'love': { icon: 'fa-heart', color: '#e53e3e', label: 'J\'adore' },
-                'rire': { icon: 'fa-laugh-beam', color: '#f6ad55', label: 'Rire' },
-                'colere': { icon: 'fa-angry', color: '#a0aec0', label: 'Colère' }
-            };
-
-            /**
-             * Récupère l'ID de l'article depuis les paramètres de l'URL.
-             * @returns {string|null} L'ID de l'article ou null s'il est absent.
-             */
-            const getArticleId = () => {
-                const params = new URLSearchParams(window.location.search);
-                return params.get('article_id');
-            };
-
-            /**
-             * Affiche un message d'erreur dans le conteneur principal.
-             * @param {string} message - Le message d'erreur à afficher.
-             */
-            const displayError = (message) => {
-                mainContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Une erreur est survenue</h3>
-                        <p>${message}</p>
-                    </div>
-                `;
-            };
-
-            /**
-             * Crée et affiche la liste des utilisateurs qui ont réagi, en fonction du filtre.
-             * @param {string} filterType - Le type de réaction à afficher ('tous', 'like', etc.).
-             */
-            const renderReactionList = (filterType) => {
-                const listContainer = document.getElementById('reactions-list-container');
-                if (!listContainer) return;
-
-                const filteredReactions = filterType === 'tous'
-                    ? allReactions
-                    : allReactions.filter(r => r.reaction_type === filterType);
-
-                if (filteredReactions.length === 0) {
-                    listContainer.innerHTML = `<div class="empty-state-small"><p>Aucune réaction de ce type.</p></div>`;
-                    return;
-                }
-
-                listContainer.innerHTML = filteredReactions.map(reaction => {
-                    const user = reaction.users_profile;
-                    const details = reactionDetails[reaction.reaction_type] || {};
-                    const userInitials = `${user.prenom ? user.prenom[0] : ''}${user.nom ? user.nom[0] : ''}`.toUpperCase();
-
-                    return `
-                        <div class="reaction-item">
-                            <div class="reaction-user-info">
-                                <div class="avatar">${userInitials}</div>
-                                <div class="user-details">
-                                    <h4>${user.prenom || ''} ${user.nom || ''}</h4>
-                                    <p>A réagi le ${new Date(reaction.date_created).toLocaleDateString('fr-FR')}</p>
-                                </div>
-                            </div>
-                            <div class="reaction-badge" style="background-color: ${details.color};">
-                                <i class="fas ${details.icon}"></i>
-                                <span>${details.label}</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            };
-            
-            /**
-             * Gère le clic sur un onglet de filtre.
-             * @param {Event} event - L'événement de clic.
-             */
-            const handleTabClick = (event) => {
-                const clickedTab = event.currentTarget;
-                document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
-                clickedTab.classList.add('active');
-                const filter = clickedTab.dataset.filter;
-                renderReactionList(filter);
-            };
-
-            /**
-             * Crée et affiche l'interface utilisateur complète avec les données récupérées.
-             * @param {object} article - Les informations sur l'article.
-             * @param {Array} reactions - La liste des réactions.
-             */
-            const renderUI = (article, reactions) => {
-                allReactions = reactions;
-
-                if (reactions.length === 0) {
-                    mainContainer.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-heart-crack"></i>
-                            <h3>Aucune réaction</h3>
-                            <p>Cet article n'a pas encore reçu de réaction. Soyez le premier !</p>
-                        </div>`;
-                    return;
-                }
-                
-                // Calculer les comptes
-                const counts = { like: 0, love: 0, rire: 0, colere: 0 };
-                reactions.forEach(r => {
-                    if (counts.hasOwnProperty(r.reaction_type)) {
-                        counts[r.reaction_type]++;
-                    }
-                });
-                
-                // Générer le HTML
-                mainContainer.innerHTML = `
-                    <section class="article-info-header">
-                        <div class="article-mini-card">
-                            <div class="article-mini-author">
-                                <div class="avatar-mini">${article.users_profile.prenom[0]}${article.users_profile.nom[0]}</div>
-                                <div>
-                                    <h4>Publié par ${article.users_profile.prenom} ${article.users_profile.nom}</h4>
-                                    <p>Article du ${new Date(article.date_created).toLocaleDateString('fr-FR')}</p>
-                                </div>
-                            </div>
-                            <p class="article-mini-text">"${article.texte.substring(0, 100)}..."</p>
-                        </div>
-                    </section>
-
-                    <section class="reactions-summary">
-                        <h3><i class="fas fa-chart-bar"></i>Résumé des réactions</h3>
-                        <div class="reactions-stats">
-                            ${Object.entries(counts).map(([type, count]) => {
-                                const details = reactionDetails[type];
-                                return `
-                                    <div class="reaction-stat">
-                                        <i class="fas ${details.icon}" style="color: ${details.color};"></i>
-                                        <div class="stat-info">
-                                            <span class="stat-label">${details.label}</span>
-                                            <span class="stat-count">${count}</span>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </section>
-
-                    <nav class="reactions-tabs" id="reactions-tabs-nav">
-                        <button class="tab-btn active" data-filter="tous">
-                            <i class="fas fa-users"></i> Tous (${reactions.length})
-                        </button>
-                        ${Object.entries(counts).filter(([_, count]) => count > 0).map(([type, count]) => {
-                            const details = reactionDetails[type];
-                            return `
-                                <button class="tab-btn" data-filter="${type}">
-                                    <i class="fas ${details.icon}"></i> ${details.label} (${count})
-                                </button>
-                            `;
-                        }).join('')}
-                    </nav>
-
-                    <section class="reactions-list" id="reactions-list-container"></section>
-                `;
-                
-                // Ajouter les écouteurs d'événements aux nouveaux onglets
-                document.querySelectorAll('.tab-btn').forEach(tab => tab.addEventListener('click', handleTabClick));
-
-                // Afficher la liste initiale (toutes les réactions)
-                renderReactionList('tous');
-            };
-
-            /**
-             * Fonction principale asynchrone pour charger toutes les données.
-             */
-            const loadReactionsPage = async () => {
-                const articleId = getArticleId();
-                if (!articleId) {
-                    displayError("L'identifiant de l'article est manquant dans l'URL.");
-                    return;
-                }
-
-                try {
-                    // Utiliser Promise.all pour exécuter les requêtes en parallèle pour plus de performance
-                    const [articleResponse, reactionsResponse] = await Promise.all([
-                        supabase
-                            .from('articles')
-                            .select(`
-                                texte,
-                                date_created,
-                                users_profile ( prenom, nom )
-                            `)
-                            .eq('article_id', articleId)
-                            .single(),
-                        supabase
-                            .from('article_reactions')
-                            .select(`
-                                reaction_type,
-                                date_created,
-                                users_profile ( prenom, nom )
-                            `)
-                            .eq('article_id', articleId)
-                            .order('date_created', { ascending: false })
-                    ]);
-
-                    // Gérer les erreurs de la base de données
-                    if (articleResponse.error) throw articleResponse.error;
-                    if (reactionsResponse.error) throw reactionsResponse.error;
-                    if (!articleResponse.data) throw new Error("Article introuvable.");
-
-                    // Rendre l'interface avec les données obtenues
-                    renderUI(articleResponse.data, reactionsResponse.data);
-
-                } catch (error) {
-                    console.error('Erreur lors du chargement des données:', error);
-                    displayError(error.message || "Impossible de charger les informations sur les réactions.");
-                }
-            };
-
-            // Lancer le chargement de la page
-            loadReactionsPage();
-        });
-        // Fin du script 'usereact.js' intégré
     </script>
 </body>
 </html>
