@@ -73,7 +73,6 @@
         }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* Styles pour la gestion des images */
         .images-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -150,7 +149,7 @@
             <div class="form-group">
                 <label>Images actuelles</label>
                 <div class="images-grid" id="existing-images-container">
-                    </div>
+                </div>
             </div>
             <div class="form-group">
                 <label for="image-upload">Ajouter de nouvelles images</label>
@@ -176,7 +175,6 @@
     <script src="supabaseClient.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Éléments du DOM
             const form = document.getElementById('edit-form');
             const submitBtn = document.getElementById('submit-btn');
             const btnText = document.getElementById('btn-text');
@@ -187,10 +185,10 @@
             const newImagesPreviewGroup = document.getElementById('new-images-preview-group');
             const newImagesPreviewContainer = document.getElementById('new-images-preview');
 
-            const { supabase, BUCKET_NAME } = window.supabaseClient; // Assurez-vous que BUCKET_NAME est exporté de supabaseClient.js
-            let newFilesToUpload = []; // Pour stocker les nouveaux fichiers
+            const { supabase } = window.supabaseClient;
+            let newFilesToUpload = [];
+            let detectedBucketName = null;
 
-            // 1. Obtenir l'ID de l'article depuis l'URL
             const urlParams = new URLSearchParams(window.location.search);
             const articleId = urlParams.get('id');
 
@@ -199,7 +197,40 @@
                 return;
             }
 
-            // 2. Charger les données de l'article ET ses images
+            // Fonction pour détecter automatiquement le nom du bucket
+            async function detectBucketName() {
+                try {
+                    const { data: buckets, error } = await supabase.storage.listBuckets();
+                    if (error) throw error;
+                    
+                    if (buckets && buckets.length > 0) {
+                        detectedBucketName = buckets[0].name;
+                        console.log('Bucket détecté automatiquement:', detectedBucketName);
+                        return detectedBucketName;
+                    } else {
+                        throw new Error('Aucun bucket trouvé dans le stockage Supabase');
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la détection du bucket:', error);
+                    return null;
+                }
+            }
+
+            // Fonction pour extraire le nom du bucket depuis une URL d'image
+            function extractBucketFromUrl(imageUrl) {
+                try {
+                    const url = new URL(imageUrl);
+                    const pathParts = url.pathname.split('/');
+                    const storageIndex = pathParts.indexOf('storage');
+                    if (storageIndex !== -1 && pathParts.length > storageIndex + 2) {
+                        return pathParts[storageIndex + 2];
+                    }
+                } catch (e) {
+                    console.warn('Impossible d\'extraire le bucket de l\'URL:', imageUrl);
+                }
+                return null;
+            }
+
             async function fetchArticleData() {
                 try {
                     const { data, error } = await supabase
@@ -210,15 +241,21 @@
 
                     if (error) throw error;
                     
-                    // Remplir les champs de texte
-                    document.getElementById('texte').value = data.texte;
-                    document.getElementById('texte_url').value = data.texte_url;
-                    document.getElementById('vente_url').value = data.vente_url;
-                    document.getElementById('whatsapp_url').value = data.whatsapp_url;
+                    document.getElementById('texte').value = data.texte || '';
+                    document.getElementById('texte_url').value = data.texte_url || '';
+                    document.getElementById('vente_url').value = data.vente_url || '';
+                    document.getElementById('whatsapp_url').value = data.whatsapp_url || '';
                     
-                    // Afficher les images existantes
                     existingImagesContainer.innerHTML = '';
                     if (data.article_images && data.article_images.length > 0) {
+                        // Détecter le bucket depuis la première image si pas encore détecté
+                        if (!detectedBucketName && data.article_images[0].image_url) {
+                            detectedBucketName = extractBucketFromUrl(data.article_images[0].image_url);
+                            if (detectedBucketName) {
+                                console.log('Bucket détecté depuis l\'URL d\'image:', detectedBucketName);
+                            }
+                        }
+
                         data.article_images.forEach(img => {
                             const wrapper = document.createElement('div');
                             wrapper.className = 'image-wrapper';
@@ -231,7 +268,6 @@
                             `;
                             existingImagesContainer.appendChild(wrapper);
 
-                            // Ajouter l'événement de suppression
                             wrapper.querySelector('.delete-image-btn').addEventListener('click', () => {
                                 handleDeleteImage(img.image_id, img.image_url);
                             });
@@ -246,26 +282,28 @@
                 }
             }
             
-            // 3. Gérer la suppression d'une image existante
             async function handleDeleteImage(imageId, imageUrl) {
                 if (!confirm("Êtes-vous sûr de vouloir supprimer cette image définitivement ?")) return;
 
                 try {
-                    // Supprimer de la base de données
                     const { error: dbError } = await supabase
                         .from('article_images')
                         .delete()
                         .eq('image_id', imageId);
                     if (dbError) throw dbError;
 
-                    // Supprimer du stockage
-                    const imagePath = new URL(imageUrl).pathname.split(`/${BUCKET_NAME}/`)[1];
-                    const { error: storageError } = await supabase.storage
-                        .from(BUCKET_NAME)
-                        .remove([imagePath]);
-                    if (storageError) console.warn("Avertissement lors de la suppression du stockage:", storageError);
+                    // Utiliser le bucket détecté
+                    const bucketToUse = detectedBucketName || await detectBucketName();
+                    if (!bucketToUse) {
+                        console.warn("Impossible de déterminer le bucket, suppression du stockage ignorée");
+                    } else {
+                        const imagePath = new URL(imageUrl).pathname.split(`/${bucketToUse}/`)[1];
+                        const { error: storageError } = await supabase.storage
+                            .from(bucketToUse)
+                            .remove([imagePath]);
+                        if (storageError) console.warn("Avertissement lors de la suppression du stockage:", storageError);
+                    }
 
-                    // Mettre à jour l'interface
                     document.getElementById(`image-${imageId}`).remove();
                     alert("Image supprimée avec succès !");
 
@@ -275,10 +313,9 @@
                 }
             }
 
-            // 4. Gérer l'ajout de nouvelles images (prévisualisation)
             imageUploadInput.addEventListener('change', (event) => {
                 newFilesToUpload = Array.from(event.target.files);
-                newImagesPreviewContainer.innerHTML = ''; // Vider l'aperçu
+                newImagesPreviewContainer.innerHTML = '';
 
                 if (newFilesToUpload.length > 0) {
                     newImagesPreviewGroup.style.display = 'block';
@@ -297,8 +334,6 @@
                 }
             });
 
-
-            // 5. Gérer la soumission du formulaire (mise à jour + upload)
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
 
@@ -308,21 +343,25 @@
                 formMessage.style.display = 'none';
 
                 try {
-                    // a) Mettre à jour les données textuelles de l'article
                     const updatedArticleData = {
                         texte: document.getElementById('texte').value,
-                        texte_url: document.getElementById('texte_url').value,
-                        vente_url: document.getElementById('vente_url').value,
-                        whatsapp_url: document.getElementById('whatsapp_url').value,
+                        texte_url: document.getElementById('texte_url').value || null,
+                        vente_url: document.getElementById('vente_url').value || null,
+                        whatsapp_url: document.getElementById('whatsapp_url').value || null,
                     };
                     const { error: updateError } = await supabase.from('articles').update(updatedArticleData).eq('article_id', articleId);
                     if (updateError) throw updateError;
 
-                    // b) Uploader les nouvelles images si elles existent
                     if (newFilesToUpload.length > 0) {
+                        // S'assurer qu'on a détecté le bucket
+                        const bucketToUse = detectedBucketName || await detectBucketName();
+                        if (!bucketToUse) {
+                            throw new Error('Impossible de déterminer le bucket de stockage');
+                        }
+
                         const uploadPromises = newFilesToUpload.map(file => {
                             const filePath = `public/${Date.now()}-${file.name}`;
-                            return supabase.storage.from(articles-images).upload(filePath, file);
+                            return supabase.storage.from(bucketToUse).upload(filePath, file);
                         });
                         
                         const uploadResults = await Promise.all(uploadPromises);
@@ -330,7 +369,7 @@
                         const newImageRecords = [];
                         for (const result of uploadResults) {
                             if (result.error) throw result.error;
-                            const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(result.data.path);
+                            const { data: urlData } = supabase.storage.from(bucketToUse).getPublicUrl(result.data.path);
                             newImageRecords.push({
                                 article_id: articleId,
                                 image_url: urlData.publicUrl
@@ -343,7 +382,6 @@
                         }
                     }
 
-                    // c) Succès
                     formMessage.textContent = '✅ Article mis à jour avec succès !';
                     formMessage.className = 'success';
                     formMessage.style.display = 'block';
@@ -361,10 +399,10 @@
                 }
             });
 
-            // Lancement initial
+            // Détecter le bucket au chargement
+            await detectBucketName();
             await fetchArticleData();
         });
     </script>
 </body>
 </html>
-
